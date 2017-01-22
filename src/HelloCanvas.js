@@ -26,6 +26,7 @@ function main_routine(VSHADER_SRC, FSHADER_SRC) {
     }
 
     let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    console.log("a_Position", a_Position);
     if(a_Position<0){
         console.log("Failed to get the storage location of a_Position");
         return;
@@ -33,20 +34,21 @@ function main_routine(VSHADER_SRC, FSHADER_SRC) {
 
     let u_PointSize = gl.getUniformLocation(gl.program, 'u_PointSize');
     console.log('u_PointSize=', u_PointSize);
-    if(a_Position===null){
+    if(!u_PointSize){
         console.log("Failed to get the storage location of u_PointSize");
         return;
     }
 
     let u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
-    if(u_FragColor<0){
+    console.log('u_FragColor', u_FragColor);
+    if(!u_FragColor){
         console.log("Failed to get the storage location of u_FragColor");
         return;
     }
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.uniform1f(u_PointSize, 8.0);
+    gl.uniform1f(u_PointSize, 18.0);
 
     let g_points=[];
     let g_colors=[];
