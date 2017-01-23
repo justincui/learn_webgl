@@ -57,9 +57,18 @@ function main_routine(VSHADER_SRC, FSHADER_SRC) {
     }
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
 
-    gl.drawArrays(gl.POINTS,0,n);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.LINE_STRIP,0,n);
+
+    let start=0;
+    canvas.onmousedown = (ev)=>{
+        start+=1;
+        start%=2;
+        console.log("start=", start);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.LINE_STRIP,start,n-start);
+    }
 
 }
 
