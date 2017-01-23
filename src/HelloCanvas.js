@@ -4,7 +4,7 @@
 function main(){
     Promise.all(read_file('shader/vs/vertex.glsl', 'shader/fs/fragment.glsl'))
         .then((shaders_src)=>{
-            console.log("src=", ...shaders_src);
+            console.log(shaders_src.join("\n__________________________________\n"));
             main_routine(shaders_src[0], shaders_src[1]);
         });
 
@@ -17,8 +17,9 @@ function main_routine(VSHADER_SRC, FSHADER_SRC) {
         return;
     }
 
-    // console.log('vertex shader=\n',VSHADER_SRC);
-    // console.log('fragment shader=\n', FSHADER_SRC);
+    console.log(gl.getParameter(gl.VERSION));
+    console.log(gl.getParameter(gl.SHADING_LANGUAGE_VERSION));
+    console.log(gl.getParameter(gl.VENDOR));
 
     if(!initShaders(gl, VSHADER_SRC, FSHADER_SRC)){
         console.log('failed to initialize shaders');
@@ -46,26 +47,35 @@ function main_routine(VSHADER_SRC, FSHADER_SRC) {
         return;
     }
 
+    gl.uniform1f(u_PointSize, 18.0);
+    gl.uniform4f(u_FragColor, 1.0, 1.0, 1.0, 1.0);
+
+    let n= initVertexBuffer(gl, a_Position, [0, 0.5, -0.5, -0.5, 0.5, -0.5]);
+    if (n < 0) {
+        console.log('Failed to set the positions of the vertices');
+        return;
+    }
+
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.uniform1f(u_PointSize, 18.0);
 
-    let g_points=[];
-    let g_colors=[];
-    canvas.onmousedown = (ev)=>{
-        let x = ev.clientX;
-        let y = ev.clientY;
-        let rect = ev.target.getBoundingClientRect();
-        x= ((x-rect.left) - canvas.width/2)/(canvas.width/2);
-        y= ((canvas.height/2)-(y-rect.top))/(canvas.height/2);
-        g_points.push([x,y]);
-        g_colors.push([x>=0?1:0, y>=0?1:0,1,1]);
+    gl.drawArrays(gl.POINTS,0,n);
 
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        for(let i=0; i<g_points.length; i+=1){
-            gl.vertexAttrib2fv(a_Position, g_points[i]);
-            gl.uniform4fv(u_FragColor, g_colors[i]);
-            gl.drawArrays(gl.POINTS,0,1);
-        }
-    };
+}
+
+function initVertexBuffer(gl, attrib_pos, arr){
+    let vertices = new Float32Array(arr);
+    const n=Math.floor(arr.length/2);
+
+    let vertexBuffer = gl.createBuffer();
+    if(!vertexBuffer){
+        console.log("Failed to create the buffer object");
+        return -1;
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    gl.vertexAttribPointer(attrib_pos, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(attrib_pos);
+    return n;
 }

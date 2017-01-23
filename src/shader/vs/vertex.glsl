@@ -1,4 +1,4 @@
-////////////////////////////////////////////
+#version 100
 attribute vec4 a_Position;
 uniform float u_PointSize;
 
