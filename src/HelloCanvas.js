@@ -26,73 +26,74 @@ function main_routine(VSHADER_SRC, FSHADER_SRC) {
         return;
     }
 
-    let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-    console.log("a_Position", a_Position);
-    if(a_Position<0){
-        console.log("Failed to get the storage location of a_Position");
-        return;
-    }
-
-    let u_PointSize = gl.getUniformLocation(gl.program, 'u_PointSize');
-    console.log('u_PointSize=', u_PointSize);
-    if(!u_PointSize){
-        console.log("Failed to get the storage location of u_PointSize");
-        return;
-    }
-
-    let u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
-    console.log('u_FragColor', u_FragColor);
-    if(!u_FragColor){
-        console.log("Failed to get the storage location of u_FragColor");
-        return;
-    }
-
-    gl.uniform1f(u_PointSize, 18.0);
-    gl.uniform4f(u_FragColor, 1.0, 1.0, 1.0, 1.0);
-
-    let n= initVertexBuffer(gl, a_Position, [-0.5, 0.5, -0.5, -0.5, 0.5,0.5, 0.5, -0.5]);
+    const verticesTexCoords = new Float32Array([
+        //vertices coordinates     texture coordinates
+        -0.5, 0.5,                  0.0, 1.0,
+        -0.5, -0.5,                 0.0, 0.0,
+        0.5, 0.5,                   1.0, 1.0,
+        0.5,-0.5,                   1.0, 0.0,
+    ]);
+    let n= initVertexBuffer(gl, verticesTexCoords);
     if (n < 0) {
         console.log('Failed to set the positions of the vertices');
         return;
     }
-
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-    const draw_mode=gl.TRIANGLE_FAN;
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.drawArrays(draw_mode,0,n);
-
-    let start=0;
-    let colors=[
-        [1,0,0,1],
-        [0,1,0,1],
-        [0,0,1,1],
-        [1,1,1,1],
-    ];
-    canvas.onmousedown = (ev)=>{
-        start+=1;
-        start%=4;
-        console.log("start=", start);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.uniform4fv(u_FragColor, colors[start]);
-        gl.drawArrays(draw_mode,0,n);
-    }
-
+    loadTextureAndDraw(gl, n);
 }
 
-function initVertexBuffer(gl, attrib_pos, arr){
-    let vertices = new Float32Array(arr);
-    const n=Math.floor(arr.length/2);
+function initVertexBuffer(gl, verticesTexCoords){
+    const n=Math.floor(verticesTexCoords.length/4);
 
-    let vertexBuffer = gl.createBuffer();
-    if(!vertexBuffer){
+    let vertexTexCoordBuffer = gl.createBuffer();
+    if(!vertexTexCoordBuffer){
         console.log("Failed to create the buffer object");
         return -1;
     }
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexTexCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, verticesTexCoords, gl.STATIC_DRAW);
 
-    gl.vertexAttribPointer(attrib_pos, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(attrib_pos);
+    const FSIZE = verticesTexCoords.BYTES_PER_ELEMENT;
+
+    const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    if(a_Position<0){
+        console.log("Failed to get the storage location of a_Position");
+        return;
+    }
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE*4, 0);
+    gl.enableVertexAttribArray(a_Position);
+
+    const a_TexCoord = gl.getAttribLocation(gl.program, 'a_TexCoord');
+    if(a_TexCoord<0){
+        console.log("Failed to get the storage location of a_TexCoord");
+        return;
+    }
+    gl.vertexAttribPointer(a_TexCoord, 2, gl.FLOAT, false, FSIZE*4, FSIZE*2);
+    gl.enableVertexAttribArray(a_TexCoord);
+
     return n;
+}
+
+function loadImage(gl, image){
+    let texture = gl.createTexture();
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+    let u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
+    if(!u_Sampler){
+        console.log("Failed to get the storage location of u_Sampler");
+    }
+    gl.uniform1i(u_Sampler, 0);
+}
+
+function loadTextureAndDraw(gl, n){
+    let image = new Image();
+    image.onload = ()=>{
+        loadImage(gl, image);
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);
+    };
+    image.src='../res/sky.jpg';
 }

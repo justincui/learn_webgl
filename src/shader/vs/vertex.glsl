@@ -1,8 +1,8 @@
 #version 100
 attribute vec4 a_Position;
-uniform float u_PointSize;
-
+attribute vec2 a_TexCoord;
+varying vec2 v_TexCoord;
 void main(){
     gl_Position = a_Position; //coordinats
-    gl_PointSize = u_PointSize; //set the point size
+    v_TexCoord = a_TexCoord;
 }
