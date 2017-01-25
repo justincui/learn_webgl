@@ -50,7 +50,7 @@ function main_routine(VSHADER_SRC, FSHADER_SRC) {
     gl.uniform1f(u_PointSize, 18.0);
     gl.uniform4f(u_FragColor, 1.0, 1.0, 1.0, 1.0);
 
-    let n= initVertexBuffer(gl, a_Position, [0, 0.5, -0.5, -0.5, 0.5, -0.5]);
+    let n= initVertexBuffer(gl, a_Position, [-0.5, 0.5, -0.5, -0.5, 0.5,0.5, 0.5, -0.5]);
     if (n < 0) {
         console.log('Failed to set the positions of the vertices');
         return;
@@ -58,16 +58,24 @@ function main_routine(VSHADER_SRC, FSHADER_SRC) {
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
+    const draw_mode=gl.TRIANGLE_FAN;
     gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.drawArrays(gl.LINE_STRIP,0,n);
+    gl.drawArrays(draw_mode,0,n);
 
     let start=0;
+    let colors=[
+        [1,0,0,1],
+        [0,1,0,1],
+        [0,0,1,1],
+        [1,1,1,1],
+    ];
     canvas.onmousedown = (ev)=>{
         start+=1;
-        start%=2;
+        start%=4;
         console.log("start=", start);
         gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.drawArrays(gl.LINE_STRIP,start,n-start);
+        gl.uniform4fv(u_FragColor, colors[start]);
+        gl.drawArrays(draw_mode,0,n);
     }
 
 }
