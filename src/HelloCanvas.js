@@ -28,10 +28,10 @@ function main_routine(VSHADER_SRC, FSHADER_SRC) {
 
     const verticesTexCoords = new Float32Array([
         //vertices coordinates     texture coordinates
-        -0.5, 0.5,                  0.0, 1.0,
-        -0.5, -0.5,                 0.0, 0.0,
-        0.5, 0.5,                   1.0, 1.0,
-        0.5,-0.5,                   1.0, 0.0,
+        -0.8, 0.8,                  0.5, 0.5,
+        -0.8, -0.8,                 0.5, 0.0,
+        0.8, 0.8,                   1.0, 0.5,
+        0.8,-0.8,                   1.0, 0.0,
     ]);
     let n= initVertexBuffer(gl, verticesTexCoords);
     if (n < 0) {
